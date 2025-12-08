@@ -1,3 +1,4 @@
+import argv
 import file_streams/file_stream.{type FileStream as FS}
 import file_streams/file_stream_error.{type FileStreamError as FSE}
 import file_streams/text_encoding
@@ -9,11 +10,17 @@ import gleam/result
 import gleam/string
 
 pub fn main() {
-  case read_0_rots_from("input.txt") {
-    Ok(r) ->
-      io.println("Number of rotations ending in 0: " <> r |> int.to_string())
-    Error(e) ->
-      io.println("Error reading file: " <> file_stream_error.describe(e))
+  case argv.load().arguments {
+    [] -> io.println("File argument required")
+    [file, ..] ->
+      case read_0_rots_from(file) {
+        Ok(r) ->
+          io.println(
+            "Number of rotations ending in 0: " <> r |> int.to_string(),
+          )
+        Error(e) ->
+          io.println("Error reading file: " <> file_stream_error.describe(e))
+      }
   }
 }
 
