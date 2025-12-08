@@ -28,6 +28,13 @@ pub fn l1_is_not_0_test() -> Nil {
   assert ["L1"] |> count_rots() == 0
 }
 
+pub fn full_turns_test() -> Nil {
+  assert ["L100"] |> count_rots() == 1
+  assert ["L200"] |> count_rots() == 1
+  assert ["R100"] |> count_rots() == 1
+  assert ["R200"] |> count_rots() == 1
+}
+
 pub fn l1_and_r1_equals_0() -> Nil {
   assert ["L1", "R1"] |> count_rots() == 1
 

@@ -26,22 +26,18 @@ pub fn read_0_rots_from(path: String) -> Result(Int, FSE) {
 }
 
 fn read_0_rots(file: FS, sum: Int, rot0count: Int) -> Result(Int, FSE) {
-  let sum = wrap_between_0_100(sum)
-
-  let rot0count = case sum {
-    0 -> rot0count + 1
-    _ -> rot0count
-  }
-
   case file |> file_stream.read_line {
     Error(e) if e == file_stream_error.Eof -> Ok(rot0count)
-    Ok(line) ->
-      read_0_rots(
-        file,
-        sum + { line |> rot_to_int |> option.unwrap(0) },
-        rot0count,
-      )
     Error(e) -> Error(e)
+    Ok(line) -> {
+      let sum =
+        sum + { line |> rot_to_int |> option.unwrap(0) } |> wrap_between_0_100
+
+      read_0_rots(file, sum, case sum {
+        0 -> rot0count + 1
+        _ -> rot0count
+      })
+    }
   }
 }
 
@@ -49,6 +45,7 @@ fn read_0_rots(file: FS, sum: Int, rot0count: Int) -> Result(Int, FSE) {
 /// wrapped: R863 -> 63, L863 -> -863 -> -63 -> 37
 fn wrap_between_0_100(i: Int) -> Int {
   case i {
+    i if i % 100 == 0 -> 0
     i if i >= 100 -> i % 100
     i if i < 0 -> i % 100 + 100
     i -> i
