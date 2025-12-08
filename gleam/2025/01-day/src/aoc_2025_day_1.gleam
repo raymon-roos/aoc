@@ -24,8 +24,8 @@ pub fn main() {
   }
 }
 
-/// Read file of dial rotations line-by-line and count
-/// how many times a rotation ends on the 0 position
+/// Read file of dial rotations line-by-line and count how many times 
+/// a rotation ends on the 0 position, starting from the 50 position
 pub fn read_0_rots_from(path: String) -> Result(Int, FSE) {
   file_stream.open_read_text(path, text_encoding.Latin1)
   |> result.map(read_0_rots(_, 50, 0))

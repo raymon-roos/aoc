@@ -60,3 +60,7 @@ pub fn example_input_test() {
     |> aoc_2025_day_1.count_0_rots(0, 0)
     == 3
 }
+
+pub fn read_file_test() {
+  assert aoc_2025_day_1.read_0_rots_from("test/test.txt") == Ok(3)
+}
