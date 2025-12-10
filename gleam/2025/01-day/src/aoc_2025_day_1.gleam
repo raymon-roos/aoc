@@ -37,8 +37,7 @@ fn read_0_rots(file: FS, sum: Int, rot0count: Int) -> Result(Int, FSE) {
     Error(e) if e == file_stream_error.Eof -> Ok(rot0count)
     Error(e) -> Error(e)
     Ok(line) -> {
-      let sum =
-        sum + { line |> rot_to_int |> option.unwrap(0) } |> wrap_between_0_100
+      let sum = sum + { line |> rot_to_int |> option.unwrap(0) } |> modulo_100
 
       read_0_rots(file, sum, case sum {
         0 -> rot0count + 1
@@ -48,15 +47,9 @@ fn read_0_rots(file: FS, sum: Int, rot0count: Int) -> Result(Int, FSE) {
   }
 }
 
-/// The dial moves between 0 and 100. Multiple whole rotations have to be
-/// wrapped: R863 -> 63, L863 -> -863 -> -63 -> 37
-fn wrap_between_0_100(i: Int) -> Int {
-  case i {
-    i if i % 100 == 0 -> 0
-    i if i >= 100 -> i % 100
-    i if i < 0 -> i % 100 + 100
-    i -> i
-  }
+/// With `100` as a fixed divisor, this never errors
+fn modulo_100(i: Int) -> Int {
+  int.modulo(i, 100) |> result.unwrap(0)
 }
 
 /// Transform a rotation of the dial to an int.
@@ -79,7 +72,7 @@ pub fn rots_to_ints(rots: List(String)) -> List(Int) {
 pub fn count_0_rots(rots: List(Int), sum, count) -> Int {
   case rots {
     [first, ..rest] ->
-      case wrap_between_0_100(sum + first) {
+      case modulo_100(sum + first) {
         0 -> count_0_rots(rest, 0, count + 1)
         newsum -> count_0_rots(rest, newsum, count)
       }
