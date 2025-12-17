@@ -1,4 +1,5 @@
 import aoc_2025_day_1
+import gleam/string
 import gleeunit
 
 const rots = [
@@ -62,5 +63,8 @@ pub fn example_input_test() {
 }
 
 pub fn read_file_test() {
-  assert aoc_2025_day_1.read_0_rots_from("test/test.txt") == Ok(3)
+  assert aoc_2025_day_1.read_rots_from("test/test.txt") == "3"
+
+  assert aoc_2025_day_1.read_rots_from("non_existing_file")
+    |> string.ends_with("No such file or directory")
 }

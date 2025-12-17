@@ -1,7 +1,6 @@
 import argv
-import file_streams/file_stream.{type FileStream as FS}
-import file_streams/file_stream_error.{type FileStreamError as FSE}
-import file_streams/text_encoding
+import file_streamer
+import file_streams/file_stream_error
 import gleam/int
 import gleam/io
 import gleam/list
@@ -12,44 +11,24 @@ import gleam/string
 pub fn main() {
   case argv.load().arguments {
     [] -> io.println("File argument required")
-    [file, ..] ->
-      case read_0_rots_from(file) {
-        Ok(r) ->
-          io.println(
-            "Number of rotations ending in 0: " <> r |> int.to_string(),
-          )
-        Error(e) ->
-          io.println("Error reading file: " <> file_stream_error.describe(e))
-      }
+    [file, ..] -> read_rots_from(file) |> io.println()
   }
 }
 
-/// Read file of dial rotations line-by-line and count how many times 
-/// a rotation ends on the 0 position, starting from the 50 position
-pub fn read_0_rots_from(path: String) -> Result(Int, FSE) {
-  file_stream.open_read_text(path, text_encoding.Latin1)
-  |> result.map(read_0_rots(_, 50, 0))
-  |> result.flatten
-}
-
-fn read_0_rots(file: FS, sum: Int, rot0count: Int) -> Result(Int, FSE) {
-  case file |> file_stream.read_line {
-    Error(e) if e == file_stream_error.Eof -> Ok(rot0count)
-    Error(e) -> Error(e)
-    Ok(line) -> {
-      let sum = sum + { line |> rot_to_int |> option.unwrap(0) } |> modulo_100
-
-      read_0_rots(file, sum, case sum {
-        0 -> rot0count + 1
-        _ -> rot0count
-      })
-    }
+pub fn read_rots_from(file: String) -> String {
+  case file_streamer.read_from(file, 0, 50, process_rotation) {
+    Ok(r) -> r |> int.to_string()
+    Error(e) -> "Error reading file: " <> file_stream_error.describe(e)
   }
 }
 
-/// With `100` as a fixed divisor, this never errors
-fn modulo_100(i: Int) -> Int {
-  int.modulo(i, 100) |> result.unwrap(0)
+fn process_rotation(rot: String, count: Int, sum: Int) -> #(Int, Int) {
+  let sum = sum + { rot |> rot_to_int |> option.unwrap(0) } |> modulo_100
+  let count = case sum {
+    0 -> count + 1
+    _ -> count
+  }
+  #(count, sum)
 }
 
 /// Transform a rotation of the dial to an int.
@@ -61,6 +40,11 @@ pub fn rot_to_int(rot: String) -> option.Option(Int) {
     _ -> Error(Nil)
   }
   |> option.from_result
+}
+
+/// With `100` as a fixed divisor, this never errors
+fn modulo_100(i: Int) -> Int {
+  int.modulo(i, 100) |> result.unwrap(0)
 }
 
 pub fn rots_to_ints(rots: List(String)) -> List(Int) {
